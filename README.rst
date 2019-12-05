@@ -23,14 +23,14 @@ This section lists the currently supported deck formats.
 Input formats
 +++++++++++++
 
-These formats can be read:
+These deck formats can be read:
 
-- Currently None
+- CSV files exported from https://tappedout.com
 
 Output formats
 ++++++++++++++
 
-These formats can be written:
+These deck formats can be written:
 
 - Currently None
 
@@ -43,8 +43,9 @@ Requirements
 Install
 -------
 
-Install from PyPI using :code:`pip3 install MTGDeckConverter`
-(NOTE: CURRENTLY NOT IMPLEMENTED. This will work at some point in the future, when this note disappears.)
+At some point in the future, you’ll be able to install from PyPI using :code:`pip3 install MTGDeckConverter`
+(NOTE: This program is currently NOT published on PyPI.
+This will work at some point in the future, when this note disappears.)
 
 Alternatively, to install the latest version from a local repository checkout,
 open a terminal at the root level of your checkout (contains ``setup.py`` and this README) and run:
@@ -58,7 +59,9 @@ Currently, there is no setup.exe or directly executable Python bundle for Window
 Usage
 -----
 
-Execute *MTGDeckConverter*.
+Currently, there is no main application.
+You can explore what is implemented by importing the project as a Python library.
+Later, you’ll be able to run this as a program by executing ``MTGDeckConverter``.
 
 Contributing
 ------------
@@ -72,12 +75,11 @@ Running the tests
 Running the unit test suite is integrated into setup.py.
 So to run the tests, execute :code:`python3 setup.py test` from the git checkout root directory.
 
-
 The tests require:
 
-- pytest
-- PyHamcrest
-- pyfakefs
+- `pytest <https://pypi.org/project/pytest/>`_
+- `PyHamcrest <https://pypi.org/project/PyHamcrest/>`_
+- `pyfakefs <https://pypi.org/project/pyfakefs/>`_
 
 About
 -----
