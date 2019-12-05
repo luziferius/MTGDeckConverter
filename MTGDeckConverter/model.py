@@ -38,7 +38,10 @@ class Deck:
     """
     An MTG deck. It consists of cards placed in a main deck and a side board.
     """
-    def __init__(self):
+    def __init__(self, name: str = ""):
+        # Some formats allow specifying the deck name in the file. This can be used to write the deck name, if
+        # supported by the output module.
+        self.name = name
         self.main_deck: CardList = []
         self.side_board: CardList = []
         # The following two categories are used by TappedOut. Just store them in case of adding an output formatter
