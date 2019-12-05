@@ -38,7 +38,7 @@ These formats can be written:
 Requirements
 ------------
 
-- Python 3.7 or newer (3.6 may work, but is untested)
+- Python 3.7 or newer
 
 Install
 -------
