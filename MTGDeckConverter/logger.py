@@ -24,8 +24,9 @@ root_logger = logging.getLogger(MTGDeckConverter.constants.PROGRAMNAME)
 LOG_FORMAT = "%(asctime)s %(levelname)s - %(name)s - %(message)s"
 
 
-def get_logger(name: str) -> logging.Logger:
-    return root_logger.getChild(name)
+def get_logger(full_module_path: str) -> logging.Logger:
+    module_path = ".".join(full_module_path.split(".")[1:])
+    return root_logger.getChild(module_path)
 
 
 def configure_root_logger(args: Namespace):
