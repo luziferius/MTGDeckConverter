@@ -66,7 +66,7 @@ def parse_deck(csv_file_path: Path) -> MTGDeckConverter.model.Deck:
 def _read_lines_from_csv(csv_file_path: Path) -> typing.Generator[typing.Dict[str, str], None, None]:
     # Explicitly setting the field names, because the generated header contains a typo ("Languange").
     field_names = "Board,Qty,Name,Printing,Foil,Alter,Signed,Condition,Language".split(",")
-    with open(csv_file_path, "r", encoding="utf-8", newline="") as csv_file:
+    with csv_file_path.open("r", encoding="utf-8", newline="") as csv_file:
         reader = csv.DictReader(csv_file, fieldnames=field_names, dialect="tappedout_com")
         next(reader)  # Skip the header
         yield from reader

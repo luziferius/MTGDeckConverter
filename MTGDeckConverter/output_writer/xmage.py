@@ -46,7 +46,7 @@ def write_deck_file(deck: Deck, output_path: Path):
         for card in deck.side_board
     )
     logger.debug("Opened output file.")
-    with open(output_path, "w", encoding="utf-8") as output_file:
+    with output_path.open("w", encoding="utf-8") as output_file:
         if deck.name:
             # Only write the name, if it is known.
             logger.debug("The deck has an associated name. Writing the name header.")
