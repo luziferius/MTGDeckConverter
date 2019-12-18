@@ -17,10 +17,10 @@ import logging
 import logging.handlers
 import sys
 
-from av1transcoder.argument_parser import Namespace
-import av1transcoder.constants
+from MTGDeckConverter.argument_parser import Namespace
+import MTGDeckConverter.constants
 
-root_logger = logging.getLogger(av1transcoder.constants.PROGRAMNAME)
+root_logger = logging.getLogger(MTGDeckConverter.constants.PROGRAMNAME)
 LOG_FORMAT = "%(asctime)s %(levelname)s - %(name)s - %(message)s"
 
 
