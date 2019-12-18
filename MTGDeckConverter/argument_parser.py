@@ -18,13 +18,12 @@ import itertools
 from pathlib import Path
 from typing import NamedTuple, Optional, List, Iterable, Union
 
-import av1transcoder.constants
+import MTGDeckConverter.constants
 
 __all__ = [
     "Namespace",
     "parse_args",
 ]
-
 
 
 class Namespace(NamedTuple):
@@ -55,7 +54,7 @@ def _generate_argument_parser() -> ArgumentParser:
     parser = ArgumentParser(description=description, fromfile_prefix_chars="@", epilog=epilog)
     parser.add_argument(
         "-v", "--version", action="version",
-        version=f"{av1transcoder.constants.PROGRAMNAME} Version {av1transcoder.constants.VERSION}"
+        version=f"{MTGDeckConverter.constants.PROGRAMNAME} Version {MTGDeckConverter.constants.VERSION}"
     )
     parser.add_argument(
         "-V", "--verbose",
