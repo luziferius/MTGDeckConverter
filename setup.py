@@ -25,6 +25,7 @@ with open("README.rst", "r", encoding="utf-8") as f:
 setup(
     name=project_name,
     packages=find_packages(exclude=["tests"]),
+    include_package_data=True,  # Required to ship the database schema file and patches.
     # add required packages to install_requires list
     # install_requires=["package", "package2"],
     setup_requires=["pytest-runner"],
