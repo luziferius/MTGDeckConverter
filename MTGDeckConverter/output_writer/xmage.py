@@ -17,12 +17,17 @@ from pathlib import Path
 
 from MTGDeckConverter.model import Deck
 
+import MTGDeckConverter.logger
+
+logger = MTGDeckConverter.logger.get_logger(__name__)
+
 deck_name_format_line = "NAME:{deck_name}\n"
 main_deck_format_line = "{count} [{set}:{number}] {english_name}\n"
 sideboard_format_line = "SB: {count} [{set}:{number}] {english_name}\n"
 
 
 def write_deck_file(deck: Deck, output_path: Path):
+    logger.info(f"Start writing deck {f'{deck.name} ' if deck.name else ''}to file {output_path}.")
     _fill_missing_information(deck)
     main_deck_lines = (
         main_deck_format_line.format(
@@ -40,11 +45,15 @@ def write_deck_file(deck: Deck, output_path: Path):
             english_name=card.english_name)
         for card in deck.side_board
     )
+    logger.debug("Opened output file.")
     with open(output_path, "w", encoding="utf-8") as output_file:
         if deck.name:
             # Only write the name, if it is known.
+            logger.debug("The deck has an associated name. Writing the name header.")
             output_file.write(deck_name_format_line.format(deck_name=deck.name))
+        logger.debug("Writing the main deck list.")
         output_file.writelines(main_deck_lines)
+        logger.debug("Writing the sideboard list.")
         output_file.writelines(sideboard_deck_lines)
         # Writing the LAYOUT section below the sideboard is currently not implemented.
 

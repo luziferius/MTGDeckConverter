@@ -16,6 +16,10 @@
 from dataclasses import dataclass
 import typing
 
+import MTGDeckConverter.logger
+
+logger = MTGDeckConverter.logger.get_logger(__name__)
+
 
 @dataclass
 class Card:
@@ -39,6 +43,7 @@ class Deck:
     An MTG deck. It consists of cards placed in a main deck and a side board.
     """
     def __init__(self, name: str = ""):
+        logger.info(f"""Created an empty deck{f' with name "{name}"' if name else ''}.""")
         # Some formats allow specifying the deck name in the file. This can be used to write the deck name, if
         # supported by the output module.
         self.name = name
@@ -72,4 +77,5 @@ class Deck:
     def _add_to_deck(self, deck: CardList, card: Card, is_commander: bool = False):
         deck.append(card)
         if is_commander:
+            logger.info(f"Adding designated Commander card to the Command zone: {card}")
             self.commanders.append(card)

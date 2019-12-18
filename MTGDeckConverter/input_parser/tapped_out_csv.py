@@ -20,6 +20,9 @@ from pathlib import Path
 import typing
 
 import MTGDeckConverter.model
+import MTGDeckConverter.logger
+
+logger = MTGDeckConverter.logger.get_logger(__name__)
 
 
 class TappedOutDialect(csv.Dialect):
@@ -41,6 +44,7 @@ csv.register_dialect("tappedout_com", TappedOutDialect)
 
 
 def parse_deck(csv_file_path: Path) -> MTGDeckConverter.model.Deck:
+    logger.info(f"Parsing Tappedout.com CSV exported deck from location {csv_file_path}")
     deck = MTGDeckConverter.model.Deck()
     # These are the four categories/boards supported by TappedOut.
     card_categories = {
@@ -80,4 +84,6 @@ def _parse_cards_from_line(line: typing.Dict[str, str]) -> typing.List[MTGDeckCo
         foil=bool(line["Foil"]),
         condition=line["Condition"],
     )
-    return [card] * int(line["Qty"])
+    quantity = int(line["Qty"])
+    logger.debug(f"Parsed CSV line. Found {quantity} * '{card.english_name}'.")
+    return [card] * quantity
