@@ -19,6 +19,7 @@ Supported formats
 -----------------
 
 This section lists the currently supported deck formats.
+Beware: Currently, as long as the Scryfall integration is missing, deck conversions are incomplete.
 
 Input formats
 +++++++++++++
@@ -32,7 +33,7 @@ Output formats
 
 These deck formats can be written:
 
-- Currently None
+- XMage deck lists
 
 
 Requirements
