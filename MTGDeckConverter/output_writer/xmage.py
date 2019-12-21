@@ -29,6 +29,46 @@ sideboard_format_line = "SB: {count} [{set}:{number}] {english_name}\n"
 def write_deck_file(deck: Deck, output_path: Path):
     logger.info(f"Start writing deck {f'{deck.name} ' if deck.name else ''}to file {output_path}.")
     _fill_missing_information(deck)
+    if deck.side_board and deck.commanders:
+        logger.warning(
+            "Writing a Commander deck with non-empty sideboard. As of December 2019, this is unsupported by XMage. "
+            "All cards in the sideboard will be dropped!"
+        )
+    if deck.commanders:
+        main_deck_lines, sideboard_deck_lines = _format_commander_deck(deck)
+    else:
+        main_deck_lines, sideboard_deck_lines = _format_non_commander_deck(deck)
+
+    _write_deck_file(deck, output_path, main_deck_lines, sideboard_deck_lines)
+
+
+def _format_commander_deck(deck):
+    logger.debug("Found a Commander deck.")
+    logger.debug("Placing all non-commander cards from the main board into the main board.")
+    main_deck_lines = (
+        main_deck_format_line.format(
+            count=1,
+            set=card.set_abbreviation,
+            number=card.collector_number,
+            english_name=card.english_name)
+        for card in deck.main_deck
+        if card not in deck.commanders
+    )
+    logger.debug("Placing all commander cards from the main board into the sideboard.")
+    sideboard_deck_lines = (
+        sideboard_format_line.format(
+            count=1,
+            set=card.set_abbreviation,
+            number=card.collector_number,
+            english_name=card.english_name)
+        for card in deck.main_deck
+        if card in deck.commanders
+    )
+    return main_deck_lines, sideboard_deck_lines
+
+
+def _format_non_commander_deck(deck):
+    logger.debug("Found a non-Commander deck.")
     main_deck_lines = (
         main_deck_format_line.format(
             count=1,
@@ -45,6 +85,10 @@ def write_deck_file(deck: Deck, output_path: Path):
             english_name=card.english_name)
         for card in deck.side_board
     )
+    return main_deck_lines, sideboard_deck_lines
+
+
+def _write_deck_file(deck, output_path, main_deck_lines, sideboard_deck_lines):
     logger.debug("Opened output file.")
     with output_path.open("w", encoding="utf-8") as output_file:
         if deck.name:
