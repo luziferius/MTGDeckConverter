@@ -40,7 +40,11 @@ class TappedOutDialect(csv.Dialect):
     quoting = csv.QUOTE_MINIMAL
 
 
-csv.register_dialect("tappedout_com", TappedOutDialect)
+_CSV_DIALECT_NAME = "tappedout_net"
+csv.register_dialect(_CSV_DIALECT_NAME, TappedOutDialect)
+# Foiling indicators used in the CSV.
+# "foil": Regular foil, "pre": Pre-release (and similar event) promo card. Always (?) foil with a golden date stamp.
+csv_foil_indicators = {"foil", "pre"}
 
 
 def parse_deck(csv_file_path: Path) -> MTGDeckConverter.model.Deck:
@@ -54,36 +58,49 @@ def parse_deck(csv_file_path: Path) -> MTGDeckConverter.model.Deck:
         "acquire": deck.add_to_acquire_board,
     }
     for line in _read_lines_from_csv(csv_file_path):
-        cards = _parse_cards_from_line(line)
+        cards, is_commander = _parse_cards_from_line(line)
         for card in cards:
-            # Unfortunately, the CSV data does not contain the commander designation, therefore all cards are
-            # marked as not being the commander, even if the deck has one or more.
             # The Board column contains the category/board the card belongs to, so use it to look up the right setter.
-            card_categories[line["Board"]](card, False)
+            card_categories[line["Board"]](card, is_commander)
     return deck
 
 
 def _read_lines_from_csv(csv_file_path: Path) -> typing.Generator[typing.Dict[str, str], None, None]:
-    # Explicitly setting the field names, because the generated header contains a typo ("Languange").
-    field_names = "Board,Qty,Name,Printing,Foil,Alter,Signed,Condition,Language".split(",")
     with csv_file_path.open("r", encoding="utf-8", newline="") as csv_file:
-        reader = csv.DictReader(csv_file, fieldnames=field_names, dialect="tappedout_com")
-        next(reader)  # Skip the header
-        yield from reader
+        yield from csv.DictReader(csv_file, dialect=_CSV_DIALECT_NAME)
 
 
-def _parse_cards_from_line(line: typing.Dict[str, str]) -> typing.List[MTGDeckConverter.model.Card]:
+def _parse_cards_from_line(line: typing.Dict[str, str]) -> typing.Tuple[typing.List[MTGDeckConverter.model.Card], bool]:
     """
     Parses the given CSV line into cards. If the quantity (field "Qty") is > 1,
     it returns the same card multiple times.
     """
+    try:
+        # TappedOut added the commander designation to the CSV export in December 2019.
+        # Older (or previously compatible) exports may not have the Commander column.
+        is_commander = line["Commander"] == "True"
+    except KeyError:
+        logger.warning(
+            "Parsing old CSV export without commander designations. "
+            "For better compatibility and conversion accuracy, please export the deck from TappedOut again.")
+        is_commander = False
+    try:
+        language = line["Language"]
+    except KeyError:
+        # TappedOut fixed the typo in the CSV header in December 2019.
+        # Older (or previously compatible) exports may still have the typo in the header line.
+        language = line["Languange"]
+    if not language:
+        # Default to English if not set.
+        language = "EN"
+
     card = MTGDeckConverter.model.Card(
         english_name=line["Name"],
         set_abbreviation=line["Printing"],
-        language="EN" if not line["Language"] else line["Language"],
-        foil=bool(line["Foil"]),
+        language=language,
+        foil=line["Foil"] in csv_foil_indicators,
         condition=line["Condition"],
     )
     quantity = int(line["Qty"])
-    logger.debug(f"Parsed CSV line. Found {quantity} * '{card.english_name}'.")
-    return [card] * quantity
+    logger.debug(f"Parsed CSV line. Found {quantity} * '{card.english_name}'. Is Commander: {is_commander}")
+    return [card] * quantity, is_commander
