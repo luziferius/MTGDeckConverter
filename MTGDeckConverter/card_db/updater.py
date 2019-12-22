@@ -161,10 +161,10 @@ def parse_patch_name(patch_name: str) -> int:
 
 def apply_patch(db: CardDatabase, patch_file_path: Path):
     """Apply a patch file by reading an SQL file and execute the content."""
-    with patch_file_path.open(mode="r") as patch_script:
-        logger.debug(f"About to execute SQL script from file {patch_script}, located at {patch_file_path}")
-        db.db.executescript(patch_script.read())
-        logger.debug("Success.")
+
+    logger.debug(f'About to execute SQL script from patch file located at "{patch_file_path}".')
+    db.db.executescript(patch_file_path.read_text())
+    logger.debug("Success.")
 
 
 def strip_end(text, suffix):
@@ -192,7 +192,6 @@ def version_str(version: int) -> str:
         version //= 1000
     while len(parts) < 3:
         parts.append("0")
-    parts.reverse()
-    result = ".".join(parts)
+    result = ".".join(reversed(parts))
     logger.debug(f"Result: {result}")
     return result
