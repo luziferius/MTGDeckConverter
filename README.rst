@@ -33,7 +33,7 @@ Input formats
 
 These deck formats can be read:
 
-- CSV files exported from https://tappedout.com
+- CSV files exported from https://tappedout.net
 
 Output formats
 ++++++++++++++
