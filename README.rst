@@ -3,13 +3,20 @@ MTGDeckConverter
 
 Convert digital Magic The Gathering (R) deck lists between formats.
 Please note that the conversion is lossy and may require online access, as not all formats provide all necessary
-information to perform the conversion locally. This program relies on the scryfall.com API to perform information lookup,
-if needed.
+information to perform the conversion locally. This program relies on the scryfall.com API data
+to perform information lookup, if needed.
+
+Limitations
+-----------
+
+There are certain limitations,
+when one deck file format supports features that the other source or target format does not support.
 
 For example, an XMage deck list requires the collector numbers of all cards in the deck,
-which a TappedOut CSV export does not provide. Thus to provide a conversion, the required numbers have to be looked up
-online. On the other hand, XMage deck lists do not support TappedOut custom card categories, card language,
-grading, foil state, and certain deck configurations, like Commander/Oathbreaker decks with sideboards.
+which a TappedOut CSV export does not provide. Thus, to provide a conversion, the required numbers have to be looked up
+using an additional card database as the data source.
+On the other hand, XMage deck lists do not support TappedOut custom card categories, card language,
+grading/card quality, foil state, and certain deck configurations, like Commander/Oathbreaker decks with sideboards.
 These features will be *lost* during the conversion.
 
 In the other direction, XMage saves a fully manual deck layout with rows and columns of card stacks in the editor,
@@ -40,6 +47,7 @@ Requirements
 ------------
 
 - Python 3.7 or newer
+- ``requests`` (`https://pypi.org/project/requests/ <https://pypi.org/project/requests/>`_)
 
 Install
 -------
