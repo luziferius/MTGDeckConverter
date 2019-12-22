@@ -47,7 +47,7 @@ def _format_commander_deck(deck):
     main_deck_lines = (
         _main_deck_format_line.format(
             count=1,
-            set=card.set_abbreviation,
+            set=card.set_abbreviation.upper(),
             number=card.collector_number,
             english_name=card.english_name)
         for card in deck.main_deck
@@ -57,7 +57,7 @@ def _format_commander_deck(deck):
     sideboard_deck_lines = (
         _sideboard_format_line.format(
             count=1,
-            set=card.set_abbreviation,
+            set=card.set_abbreviation.upper(),
             number=card.collector_number,
             english_name=card.english_name)
         for card in deck.main_deck
@@ -71,7 +71,7 @@ def _format_non_commander_deck(deck):
     main_deck_lines = (
         _main_deck_format_line.format(
             count=1,
-            set=card.set_abbreviation,
+            set=card.set_abbreviation.upper(),
             number=card.collector_number,
             english_name=card.english_name)
         for card in deck.main_deck
@@ -79,7 +79,7 @@ def _format_non_commander_deck(deck):
     sideboard_deck_lines = (
         _sideboard_format_line.format(
             count=1,
-            set=card.set_abbreviation,
+            set=card.set_abbreviation.upper(),
             number=card.collector_number,
             english_name=card.english_name)
         for card in deck.side_board
