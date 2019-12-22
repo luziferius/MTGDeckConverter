@@ -14,7 +14,7 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-PRAGMA user_version(1);  -- 0.000.001
+PRAGMA user_version(2);  -- 0.000.002
 PRAGMA journal_mode('wal');
 pragma foreign_keys(1);
 
@@ -34,11 +34,11 @@ CREATE TABLE Card (
    CHECK (
    -- Matches a hyphened UUID. Make sure that no duplicates caused by different formatting are possible.
    Scryfall_Oracle_ID GLOB
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]')
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]')
 );
 CREATE INDEX CardEnglishName ON Card(English_Name);
 
@@ -52,9 +52,17 @@ CREATE TABLE Printing (
    CHECK (
     -- Matches a hyphened UUID. Make sure that no duplicates caused by different formatting are possible.
    Scryfall_Card_ID GLOB
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]-' ||
-   '[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]')
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9]-' ||
+   '[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]')
 );
+
+CREATE VIEW Printings_View AS
+  SELECT Card.English_Name AS English_Name, Card_Set.English_Name AS Set_Name,
+  Card_Set.Abbreviation AS Abbreviation, Printing.Collector_Number AS Collector_Number
+  FROM Printing
+  INNER JOIN Card_Set USING (Set_ID)
+  INNER JOIN Card USING (Card_ID)
+;
