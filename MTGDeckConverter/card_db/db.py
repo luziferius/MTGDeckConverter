@@ -17,7 +17,7 @@ import atexit
 from http import HTTPStatus
 import importlib.resources
 import sqlite3
-from typing import NamedTuple, Union, List
+from typing import NamedTuple, Union, List, Tuple
 from pathlib import Path
 
 import requests
@@ -148,6 +148,76 @@ class CardDatabase:
         else:
             self.db.commit()
 
+    def get_card_set_and_number_for_name(self, english_name: str) -> Tuple[str, str]:
+        found_cards = self.db.execute(
+            "SELECT Abbreviation, Collector_Number "
+            "FROM Printings_View "
+            "WHERE English_Name = ?",
+            (english_name,)
+        ).fetchall()
+        if found_cards:
+            return found_cards[0]["Abbreviation"], found_cards[0]["Collector_Number"]
+        else:
+            raise ValueError(f'Card with name "{english_name}" not found')
+
+    def get_collector_number_for_card_in_set(self, english_name: str, set_abbreviation: str) -> str:
+        found_cards = self.db.execute(
+            "SELECT Collector_Number "
+            "FROM Printings_View "
+            "WHERE English_Name = ? "
+            "AND Abbreviation = ?",
+            (english_name, set_abbreviation.lower())
+        ).fetchall()
+        if found_cards:
+            return found_cards[0]["Collector_Number"]
+        else:
+            raise ValueError(f'Card with name "{english_name}" not found in set "{set_abbreviation}".')
+
+    def get_card_set_for_card_with_collector_number(self, english_name: str, collector_number: str) -> str:
+        found_cards = self.db.execute(
+            "SELECT Abbreviation "
+            "FROM Printings_View "
+            "WHERE English_Name = ? "
+            "AND Collector_Number = ?",
+            (english_name, collector_number.lower())
+        ).fetchall()
+        if found_cards:
+            return found_cards[0]["Abbreviation"]
+        else:
+            raise ValueError(
+                f'No set found for card with name "{english_name}" and collector’s number "{collector_number}".'
+            )
+
+    def get_english_name_for_card_in_card_set(self, set_abbreviation: str, collector_number: str) -> str:
+        found_cards = self.db.execute(
+            "SELECT English_Name "
+            "FROM Printings_View "
+            "WHERE Abbreviation = ? "
+            "AND Collector_Number = ?",
+            (set_abbreviation.lower(), collector_number.lower())
+        ).fetchall()
+        if found_cards:
+            return found_cards[0]["English_Name"]
+        else:
+            raise ValueError(
+                f'Set "{set_abbreviation}" does not have a card with collector’s number "{collector_number}".'
+            )
+
+    def is_set_abbreviation_known(self, set_abbreviation: str) -> bool:
+        """
+        Check, if the set abbreviation is known.
+        Especially with promotional sets, the set abbreviations used differ between different sources.
+        If the set abbreviation is unknown, exact printing can’t be determined.
+        """
+        is_known = bool(self.db.execute(
+            "SELECT EXISTS ( "
+            "SELECT * "
+            "FROM Card_Set "
+            "WHERE Abbreviation = ?)",
+            (set_abbreviation,)
+        ).fetchone()[0])
+        return is_known
+
 
 def _request_scryfall_card_data(path_to_data: Path = None) -> List[dict]:
     """
@@ -161,6 +231,7 @@ def _request_scryfall_card_data(path_to_data: Path = None) -> List[dict]:
 
     """
     if path_to_data is None:
+        logger.info("About to request card data from the Scryfall bulk data API.")
         card_data_request = requests.get("https://archive.scryfall.com/json/scryfall-default-cards.json")
         if card_data_request.status_code != HTTPStatus.OK:
             error_msg = f"Request to download the card data failed with status code {card_data_request.status_code}"
@@ -169,6 +240,7 @@ def _request_scryfall_card_data(path_to_data: Path = None) -> List[dict]:
         card_data_list: List[dict] = card_data_request.json()
         logger.info("Requested the card data from the Scryfall bulk data API end point.")
     else:
+        logger.info(f'Path to a Scryfall API data dump given. Loading data from "{path_to_data}".')
         import json
         card_data_list = json.loads(path_to_data.read_text())
     return card_data_list
