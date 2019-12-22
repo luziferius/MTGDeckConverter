@@ -40,13 +40,13 @@ Output formats
 
 These deck formats can be written:
 
-- XMage deck lists
+- `XMage <http://xmage.de/>`_ deck lists
 
 
 Requirements
 ------------
 
-- Python 3.7 or newer
+- Python 3.7 or newer (This program uses features added in 3.7, so earlier versions are definitely unsupported.)
 - ``requests`` (`https://pypi.org/project/requests/ <https://pypi.org/project/requests/>`_)
 
 Install
