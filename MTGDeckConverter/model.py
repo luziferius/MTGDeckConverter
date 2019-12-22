@@ -14,8 +14,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
+import itertools
 import typing
 
+from MTGDeckConverter.card_db.db import CardDatabase
 import MTGDeckConverter.logger
 
 logger = MTGDeckConverter.logger.get_logger(__name__)
@@ -79,3 +81,33 @@ class Deck:
         if is_commander:
             logger.info(f"Adding designated Commander card to the Command zone: {card}")
             self.commanders.append(card)
+
+    def fill_missing_information(self, card_db: CardDatabase):
+        all_cards = itertools.chain(self.main_deck, self.side_board, self.maybe_board, self.acquire_bord)
+        for card in all_cards:
+            self._fill_information_for_card(card, card_db)
+
+    @staticmethod
+    def _fill_information_for_card(card: Card, card_db: CardDatabase):
+        if card.english_name:
+            if (not card.set_abbreviation and not card.collector_number) \
+                    or (card.set_abbreviation and not card_db.is_set_abbreviation_known(card.set_abbreviation)):
+                # Both are unknown or the set is not present in the database. Do a guess based on the English name.
+                card.set_abbreviation, card.collector_number = card_db.get_card_set_and_number_for_name(
+                    card.english_name
+                )
+            elif not card.collector_number:
+                card.collector_number = card_db.get_collector_number_for_card_in_set(
+                    card.english_name, card.set_abbreviation
+                )
+            elif not card.set_abbreviation:
+                card.set_abbreviation = card_db.get_card_set_for_card_with_collector_number(
+                    card.english_name, card.collector_number
+                )
+        else:
+            # The English name is missing.
+            # The card can be identified, if both the set and the collector number are known.
+            if card.set_abbreviation and card.collector_number:
+                card.english_name = card_db.get_english_name_for_card_in_card_set(
+                    card.set_abbreviation, card.collector_number
+                )
