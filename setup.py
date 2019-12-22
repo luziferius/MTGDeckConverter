@@ -27,7 +27,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,  # Required to ship the database schema file and patches.
     # add required packages to install_requires list
-    # install_requires=["package", "package2"],
+    install_requires=["requests"],
     setup_requires=["pytest-runner"],
     tests_require=["pytest", "pyhamcrest", "pyfakefs"],
     test_suite="pytest",
