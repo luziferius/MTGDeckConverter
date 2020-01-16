@@ -59,9 +59,9 @@ class Deck:
         # A deck may have any number of cards in the command zone. This is empty for decks not using the zone.
         # A regular Commander or Brawl deck may have one or two commanders.
         # An Oathbreaker deck has two cards in this zone (a Planeswalker and an Instant or Sorcery signature spell).
-        # This is supplemental information, the cards in this still have to be in the appropriate list above.
+        # This is supplemental information, the cards in this list still have to be in the appropriate list above.
         # A deck may have a designated commander in the main deck and maybe multiple others in the maybe_board or
-        # acquire_board. To keep this separated
+        # acquire_board.
         self.commanders: CardList = []
 
     def add_to_main_deck(self, card: Card, is_commander: bool = False):

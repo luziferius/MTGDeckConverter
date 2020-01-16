@@ -14,6 +14,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import atexit
+import datetime
 from http import HTTPStatus
 import importlib.resources
 import sqlite3
@@ -46,7 +47,7 @@ class CardDatabase:
     #       Either implement an update function or simply drop the content
     #       and re-download everything.
 
-    COMPATIBLE_SCHEMA_VERSIONS = CompatibleSchemaVersions(2, 3)
+    COMPATIBLE_SCHEMA_VERSIONS = CompatibleSchemaVersions(4, 5)
 
     def __init__(self, database_path: Union[str, Path], do_validate_schema: bool = True):
         logger.info(f"About to open database: {database_path}, validating schema: {do_validate_schema}")
@@ -114,8 +115,8 @@ class CardDatabase:
             logger.warning("The database already contains data. Skipping the population process.")
             return
         card_data_list = _request_scryfall_card_data(path_to_data)
-        cursor = self.db.cursor()
         self.db.rollback()
+        cursor = self.db.cursor()
         cursor.execute("BEGIN TRANSACTION")
         try:
             for card in card_data_list:
@@ -126,22 +127,36 @@ class CardDatabase:
                         "SELECT * "
                         "FROM Card "
                         "WHERE Scryfall_Oracle_ID = ?)", (oracle_id,)).fetchone()[0]):
-                    cursor.execute("INSERT INTO Card (English_Name, Scryfall_Oracle_ID) "
-                                   "VALUES (?, ?)", (card["name"], oracle_id))
+                    # TODO: This may not work and may require further normalization.
+                    card_type = card["type_line"].split(" — ")[0]
+                    cursor.execute("INSERT INTO Card (English_Name, Card_Type, Scryfall_Oracle_ID) "
+                                   "VALUES (?, ?, ?)", (card["name"], card_type, oracle_id))
                 if not bool(cursor.execute(
                         "SELECT EXISTS( "
-                        "SELECT *"
+                        "SELECT * "
                         "FROM Card_Set "
                         "WHERE Abbreviation = ?)", (set_abbr,)).fetchone()[0]):
-                    cursor.execute("INSERT INTO Card_Set (English_Name, Abbreviation) "
-                                   "VALUES (?, ?)", (card["set_name"], set_abbr))
+                    release_date = datetime.date.fromisoformat(card["released_at"])
+                    cursor.execute("INSERT INTO Card_Set (English_Name, Abbreviation, Release_date) "
+                                   "VALUES (?, ?, ?)", (card["set_name"], set_abbr, release_date))
+
+                rarity = "Land" \
+                    if card["name"] in ("Plains", "Island", "Swamp", "Mountain", "Forest") \
+                    else card["rarity"].title()
                 # Do the table ID lookups by the unique set abbreviation and oracle id
-                cursor.execute("INSERT INTO Printing (Card_ID, Set_ID, Collector_Number, Scryfall_Card_ID) "
-                               "SELECT Card_ID, Set_ID, ?, ? "
-                               "FROM Card_Set INNER JOIN Card "  # This joins two unconnected relations
-                               "WHERE Card_Set.Abbreviation = ? "  # and filters for the single tuple that contains
-                               "AND Card.Scryfall_Oracle_ID = ?",  # both required unique IDs
-                               (card["collector_number"], card["id"], set_abbr, oracle_id))
+
+                # This query joins unconnected relations and filters for the single tuple that contains the required
+                # unique IDs
+                cursor.execute(
+                    "INSERT INTO Printing (Card_ID, Set_ID, Rarity_ID, Collector_Number, Scryfall_Card_ID) "
+                    "SELECT Card_ID, Set_ID, Rarity.Rarity_ID, ?, ? "
+                    "FROM Rarity "
+                    "INNER JOIN Card_Set "
+                    "INNER JOIN Card "
+                    "WHERE Card_Set.Abbreviation = ? "
+                    "AND Card.Scryfall_Oracle_ID = ? "
+                    "AND Rarity.Name = ?",
+                    (card["collector_number"], card["id"], set_abbr, oracle_id, rarity))
         except Exception as e:
             self.db.rollback()
             raise e
